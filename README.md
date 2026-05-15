@@ -1,5 +1,5 @@
 # 💫 About Me:
-👋 Hi, I’m @LunguAndreiLeonard<br>👀 I’m interested in Front End Development, Web Design, JavaScript, Figma<br>🌱 I’m still learning<br>📫 How to reach me ? Easy, try on andruleo99@gmail.com
+👋 Hi, I’m @LunguAndreiLeonard<br>👀 I’m interested in Front End Development, Web Design, JavaScript, Figma<br>🌱 Building @folicle<br>📫 How to reach me ? Easy, try on andruleo99@gmail.com
 
 
 ## 🌐 Socials:
