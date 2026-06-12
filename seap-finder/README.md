@@ -33,6 +33,25 @@ Editează [`config/profile.json`](config/profile.json):
 
 Modificările se aplică la următoarea căutare, fără restart.
 
+## Pune-o pe net (gratuit)
+
+### Vercel (recomandat — îl ai deja în stack)
+
+Proiectul e gata configurat pentru Vercel (funcțiile din `api/` + static din `public/`):
+
+1. Intră pe [vercel.com/new](https://vercel.com/new) și importă repo-ul tău;
+2. La **Root Directory** alege `seap-finder`;
+3. Framework preset: **Other** — nu e nevoie de build command;
+4. Deploy. Gata, primești un URL public de forma `seap-finder.vercel.app`.
+
+### Render (alternativă, rulează `server.js` ca atare)
+
+1. [render.com](https://render.com) → New → **Web Service** → conectează repo-ul;
+2. Root Directory: `seap-finder`, Start Command: `node server.js`;
+3. Instance type: Free.
+
+> 💡 Dacă pe platforma de hosting primești erori 403/blocked de la SEAP, e posibil ca e-licitatie.ro să filtreze IP-urile de datacenter străine. În acest caz local va merge oricum, iar pentru online încearcă o regiune de deploy din Europa (Render: Frankfurt) sau un VPS european.
+
 ## Cum funcționează
 
 Serverul Node interoghează API-ul public folosit chiar de interfața e-licitatie.ro:

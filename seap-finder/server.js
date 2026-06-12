@@ -4,6 +4,7 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { fetchTenders, fetchDirectAcquisitions } from "./lib/sicap.js";
 import { filterAndRank } from "./lib/score.js";
+import { loadProfile } from "./lib/profile.js";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const PORT = process.env.PORT || 3000;
@@ -15,11 +16,6 @@ const MIME = {
   ".json": "application/json; charset=utf-8",
   ".svg": "image/svg+xml",
 };
-
-async function loadProfile() {
-  const raw = await readFile(path.join(__dirname, "config", "profile.json"), "utf-8");
-  return JSON.parse(raw);
-}
 
 function sendJSON(res, status, data) {
   res.writeHead(status, { "Content-Type": "application/json; charset=utf-8" });
