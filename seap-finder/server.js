@@ -15,6 +15,7 @@ const MIME = {
   ".css": "text/css; charset=utf-8",
   ".json": "application/json; charset=utf-8",
   ".svg": "image/svg+xml",
+  ".txt": "text/plain; charset=utf-8",
 };
 
 function sendJSON(res, status, data) {
@@ -24,6 +25,7 @@ function sendJSON(res, status, data) {
 
 const server = http.createServer(async (req, res) => {
   const url = new URL(req.url, `http://localhost:${PORT}`);
+  res.setHeader("X-Robots-Tag", "noindex, nofollow, noarchive");
 
   try {
     if (url.pathname === "/api/profile") {
