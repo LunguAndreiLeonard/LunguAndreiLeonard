@@ -33,6 +33,19 @@ Editează [`config/profile.json`](config/profile.json):
 
 Modificările se aplică la următoarea căutare, fără restart.
 
+## Acces privat (token) și invizibilă pe Google
+
+Aplicația e **blocată pentru motoarele de căutare** (meta robots, `robots.txt`, header `X-Robots-Tag`) și poate fi **protejată cu un token secret** — fără el, site-ul răspunde „Not found", ca și cum n-ar exista.
+
+**Activare:**
+
+- **Local:** `ACCESS_TOKEN=secretul-tau node server.js`
+- **Vercel:** Project → Settings → Environment Variables → adaugă `ACCESS_TOKEN` cu valoarea ta secretă → Redeploy.
+
+**Acces:** deschide o singură dată `https://adresa-ta/?token=secretul-tau` — primești un cookie valabil un an și după aceea navighezi normal, fără token în URL. Dacă vezi „Not found", tokenul lipsește sau e greșit.
+
+Alege un token lung și greu de ghicit, de ex. generat cu `openssl rand -hex 16`. Dacă nu setezi `ACCESS_TOKEN`, aplicația rămâne publică (dar tot neindexabilă).
+
 ## Pune-o pe net (gratuit)
 
 ### Vercel (recomandat — îl ai deja în stack)

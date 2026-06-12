@@ -23,9 +23,34 @@ function sendJSON(res, status, data) {
   res.end(JSON.stringify(data));
 }
 
+// Protecție opțională cu token (vezi README): pornește cu ACCESS_TOKEN=secretul-tau node server.js
+// Întoarce true dacă cererea poate continua; altfel răspunde singură (302 sau 404).
+function checkAuth(req, res, url) {
+  const secret = process.env.ACCESS_TOKEN;
+  if (!secret) return true;
+
+  const cookieToken = (req.headers.cookie || "").match(/(?:^|;\s*)seap_token=([^;]+)/)?.[1];
+  if (cookieToken === secret) return true;
+
+  if (url.searchParams.get("token") === secret) {
+    url.searchParams.delete("token");
+    res.writeHead(302, {
+      Location: url.pathname + url.search,
+      "Set-Cookie": `seap_token=${secret}; Path=/; HttpOnly; SameSite=Lax; Max-Age=31536000`,
+    });
+    res.end();
+    return false;
+  }
+
+  res.writeHead(404, { "Content-Type": "text/plain; charset=utf-8" });
+  res.end("Not found");
+  return false;
+}
+
 const server = http.createServer(async (req, res) => {
   const url = new URL(req.url, `http://localhost:${PORT}`);
   res.setHeader("X-Robots-Tag", "noindex, nofollow, noarchive");
+  if (!checkAuth(req, res, url)) return;
 
   try {
     if (url.pathname === "/api/profile") {
