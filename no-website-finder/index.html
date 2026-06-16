@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="ro">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>No-Website Finder · Hartă lead-gen</title>
+  <meta name="description" content="Găsește afaceri de pe Google Maps fără website în Canada, SUA, UK, Germania și Spania." />
+
+  <!-- Leaflet -->
+  <link
+    rel="stylesheet"
+    href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+    integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
+    crossorigin=""
+  />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <aside id="sidebar">
+    <header class="brand">
+      <h1>📍 No-Website Finder</h1>
+      <p class="tagline">Afaceri de pe Maps fără site — lead-uri gata de contactat.</p>
+    </header>
+
+    <form id="search-form">
+      <label class="field">
+        <span>Țară</span>
+        <select id="country">
+          <option value="Canada">🇨🇦 Canada</option>
+          <option value="USA">🇺🇸 SUA</option>
+          <option value="United Kingdom">🇬🇧 Marea Britanie</option>
+          <option value="Germany">🇩🇪 Germania</option>
+          <option value="Spain">🇪🇸 Spania</option>
+        </select>
+      </label>
+
+      <label class="field">
+        <span>Oraș / zonă</span>
+        <input id="city" type="text" placeholder="ex: Toronto" autocomplete="off" />
+      </label>
+
+      <label class="field">
+        <span>Tip de afacere</span>
+        <input id="category" type="text" list="categories" placeholder="ex: restaurant, frizerie, dentist" />
+        <datalist id="categories">
+          <option value="restaurant"></option>
+          <option value="cafe"></option>
+          <option value="hair salon"></option>
+          <option value="barber shop"></option>
+          <option value="dentist"></option>
+          <option value="plumber"></option>
+          <option value="electrician"></option>
+          <option value="gym"></option>
+          <option value="beauty salon"></option>
+          <option value="auto repair"></option>
+          <option value="bakery"></option>
+          <option value="florist"></option>
+        </datalist>
+      </label>
+
+      <details class="api-box">
+        <summary>🔑 Cheie Google Places API</summary>
+        <p class="hint">
+          Necesară pentru date reale. Fără cheie, butonul rulează în <strong>mod demo</strong>
+          cu date exemplu. Cheia rămâne doar în browser-ul tău (localStorage).
+        </p>
+        <input id="api-key" type="password" placeholder="AIza..." autocomplete="off" />
+        <label class="checkbox">
+          <input id="deep-pages" type="checkbox" />
+          <span>Caută mai multe pagini (până la 60 rezultate, costă mai mult)</span>
+        </label>
+      </details>
+
+      <button type="submit" id="search-btn">🔎 Caută afaceri fără site</button>
+      <button type="button" id="demo-btn" class="ghost">▶ Rulează demo</button>
+    </form>
+
+    <div id="status" class="status"></div>
+
+    <div class="results-head">
+      <h2>Rezultate <span id="count" class="count">0</span></h2>
+      <button type="button" id="export-btn" class="ghost small" disabled>⬇ Export CSV</button>
+    </div>
+
+    <ul id="results" class="results"></ul>
+
+    <footer class="foot">
+      Hartă: OpenStreetMap · Date: Google Places API (New)
+    </footer>
+  </aside>
+
+  <main id="map"></main>
+
+  <script
+    src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+    integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
+    crossorigin=""
+  ></script>
+  <script src="data.demo.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
