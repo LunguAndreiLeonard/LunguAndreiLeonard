@@ -1,13 +1,8 @@
-// Shared helpers for the serverless functions (paid product).
+// Shared helpers — unealtă personală de prospectare.
 //
-// Toate cheile stau DOAR pe server (environment variables), niciodată în browser:
-//   ANTHROPIC_API_KEY      - Claude
-//   GOOGLE_PLACES_KEY      - Google Places API (New)
-//   STRIPE_SECRET_KEY      - Stripe (plăți)
-//   STRIPE_WEBHOOK_SECRET  - Stripe webhook (whsec_...)
-//   CREDIT_SECRET          - secret random pentru semnarea creditelor (HMAC)
-//   PRICE_EUR_CENTS        - prețul per oraș, în cenți (default 500 = €5)
-import crypto from "node:crypto";
+// Cheile stau DOAR pe server (environment variables), niciodată în browser:
+//   ANTHROPIC_API_KEY  - Claude (search NL, scoring, outreach)
+//   GOOGLE_PLACES_KEY  - Google Places API (New) — cheia ta
 import Anthropic from "@anthropic-ai/sdk";
 
 // Cel mai capabil model Claude.
@@ -15,33 +10,21 @@ export const MODEL = "claude-opus-4-8";
 
 export const COUNTRIES = ["Canada", "USA", "United Kingdom", "Germany", "Spain"];
 
-// Limită de adâncime per scanare plătită — ține costul Google mult sub €5 (marjă sănătoasă).
-export const MAX_CATEGORIES = 6;
+// Uz propriu → poți scana mai adânc. Ridică la nevoie (atenție la costul Google).
+export const MAX_CATEGORIES = 12;
 export const DEFAULT_CATEGORIES = [
-  "restaurant",
-  "hair salon",
-  "dentist",
-  "plumber",
-  "beauty salon",
-  "auto repair",
+  "restaurant", "cafe", "hair salon", "barber shop", "dentist", "plumber",
+  "electrician", "beauty salon", "auto repair", "bakery",
 ];
-
-export const PRICE_EUR_CENTS = parseInt(process.env.PRICE_EUR_CENTS || "500", 10);
 
 // Clientul Claude citește ANTHROPIC_API_KEY din environment.
 export const client = new Anthropic();
 
 const PLACES_ENDPOINT = "https://places.googleapis.com/v1/places:searchText";
 const FIELD_MASK = [
-  "places.id",
-  "places.displayName",
-  "places.formattedAddress",
-  "places.location",
-  "places.websiteUri",
-  "places.nationalPhoneNumber",
-  "places.rating",
-  "places.googleMapsUri",
-  "places.primaryTypeDisplayName",
+  "places.id", "places.displayName", "places.formattedAddress", "places.location",
+  "places.websiteUri", "places.nationalPhoneNumber", "places.rating",
+  "places.googleMapsUri", "places.primaryTypeDisplayName",
 ].join(",");
 
 /** Citește body-ul JSON indiferent dacă platforma l-a parsat deja sau nu. */
@@ -49,11 +32,7 @@ export async function readJson(req) {
   if (req.body && typeof req.body === "object") return req.body;
   let raw = "";
   for await (const chunk of req) raw += chunk;
-  try {
-    return raw ? JSON.parse(raw) : {};
-  } catch {
-    return {};
-  }
+  try { return raw ? JSON.parse(raw) : {}; } catch { return {}; }
 }
 
 /** Extrage primul bloc de text din răspunsul Claude. */
@@ -69,26 +48,8 @@ export function fail(res, err) {
   res.status(status).json({ error: err?.message || "Eroare internă" });
 }
 
-// ---- Google Places (server-side) ----------------------------------------
-export async function googleTextSearch(textQuery) {
-  const key = process.env.GOOGLE_PLACES_KEY;
-  if (!key) throw new Error("GOOGLE_PLACES_KEY nu este setat pe server."); // TODO: setează cheia
-  const res = await fetch(PLACES_ENDPOINT, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      "X-Goog-Api-Key": key,
-      "X-Goog-FieldMask": FIELD_MASK,
-    },
-    body: JSON.stringify({ textQuery, pageSize: 20, languageCode: "en" }),
-  });
-  if (!res.ok) {
-    let detail = "";
-    try { detail = (await res.json())?.error?.message || ""; } catch {}
-    throw new Error(`Google API ${res.status}: ${detail || res.statusText}`);
-  }
-  const data = await res.json();
-  return (data.places || []).map((p) => ({
+function normalize(p) {
+  return {
     name: p.displayName?.text || "(fără nume)",
     address: p.formattedAddress || "",
     lat: p.location?.latitude,
@@ -98,43 +59,40 @@ export async function googleTextSearch(textQuery) {
     website: p.websiteUri || null,
     type: p.primaryTypeDisplayName?.text || "",
     mapsUri: p.googleMapsUri || "",
-  }));
+  };
 }
 
-// ---- Credit semnat (HMAC) -----------------------------------------------
-// Un credit = dreptul de a scana UN oraș. Emis după plată, verificat la /api/search.
-// NOTĂ producție: pentru a împiedica reutilizarea, ține un store (KV/DB) cu jti-urile
-// consumate. Aici tokenul are doar expirare + scop (oraș), suficient pentru schelet.
-function creditSecret() {
-  const s = process.env.CREDIT_SECRET;
-  if (!s) throw new Error("CREDIT_SECRET nu este setat pe server."); // TODO: setează un secret random
-  return s;
-}
+// ---- Google Places (server-side), cu paginare opțională ------------------
+export async function googleTextSearch(textQuery, maxPages = 1) {
+  const key = process.env.GOOGLE_PLACES_KEY;
+  if (!key) throw new Error("GOOGLE_PLACES_KEY nu este setat pe server."); // TODO: pune cheia în .env
 
-function b64url(buf) {
-  return Buffer.from(buf).toString("base64url");
-}
+  const out = [];
+  let pageToken = null;
+  for (let page = 0; page < maxPages; page++) {
+    const body = { textQuery, pageSize: 20, languageCode: "en" };
+    if (pageToken) body.pageToken = pageToken;
 
-export function signCredit(payload) {
-  const body = b64url(JSON.stringify(payload));
-  const sig = crypto.createHmac("sha256", creditSecret()).update(body).digest("base64url");
-  return `${body}.${sig}`;
-}
+    const res = await fetch(PLACES_ENDPOINT, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "X-Goog-Api-Key": key,
+        "X-Goog-FieldMask": FIELD_MASK + ",nextPageToken",
+      },
+      body: JSON.stringify(body),
+    });
+    if (!res.ok) {
+      let detail = "";
+      try { detail = (await res.json())?.error?.message || ""; } catch {}
+      throw new Error(`Google API ${res.status}: ${detail || res.statusText}`);
+    }
+    const data = await res.json();
+    (data.places || []).forEach((p) => out.push(normalize(p)));
 
-export function verifyCredit(token) {
-  if (!token || typeof token !== "string" || !token.includes(".")) return null;
-  const [body, sig] = token.split(".");
-  const expected = crypto.createHmac("sha256", creditSecret()).update(body).digest("base64url");
-  // Comparație în timp constant.
-  const a = Buffer.from(sig);
-  const b = Buffer.from(expected);
-  if (a.length !== b.length || !crypto.timingSafeEqual(a, b)) return null;
-  let payload;
-  try {
-    payload = JSON.parse(Buffer.from(body, "base64url").toString());
-  } catch {
-    return null;
+    pageToken = data.nextPageToken;
+    if (!pageToken) break;
+    await new Promise((r) => setTimeout(r, 1600)); // tokenul are nevoie de o scurtă pauză
   }
-  if (!payload.exp || Date.now() > payload.exp) return null;
-  return payload;
+  return out;
 }

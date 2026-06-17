@@ -1,12 +1,12 @@
-// POST /api/search   (PLĂTIT — necesită un credit valid pentru orașul cerut)
-// Body: { credit, query? }   (orașul/țara vin din creditul semnat)
-// Returnează: { city, country, total, leads: [{ name, address, ... website:null }] }
+// POST /api/search   (unealtă personală — fără plată)
+// Body: { city, country, query?, deep? }
+// Returnează: { city, country, total, leads: [{ ...website:null }] }
 //
-// Google Places rulează AICI, pe server (cheia ta), cu adâncime limitată (MAX_CATEGORIES)
-// ca să ții costul mult sub €5. Datele NU sunt stocate — generate la cerere (ToS Google).
+// Google Places rulează AICI, pe server (cheia ta). Datele NU sunt stocate (ToS Google):
+// le folosești live pentru prospectarea ta.
 import {
   client, MODEL, COUNTRIES, MAX_CATEGORIES, DEFAULT_CATEGORIES,
-  readJson, firstText, fail, googleTextSearch, verifyCredit,
+  readJson, firstText, fail, googleTextSearch,
 } from "./_lib.js";
 
 const CAT_SCHEMA = {
@@ -33,29 +33,27 @@ async function categoriesFor(query) {
 
 export default async function handler(req, res) {
   if (req.method !== "POST") return res.status(405).json({ error: "Method not allowed" });
-  const { credit, query } = await readJson(req);
-
-  const grant = verifyCredit(credit);
-  if (!grant) return res.status(402).json({ error: "Credit lipsă sau invalid. Cumpără o scanare." });
-  if (!COUNTRIES.includes(grant.country)) return res.status(400).json({ error: "Țară nesuportată." });
+  const { city, country, query, deep } = await readJson(req);
+  if (!city) return res.status(400).json({ error: "Lipsește orașul." });
+  if (!COUNTRIES.includes(country)) return res.status(400).json({ error: "Țară nesuportată." });
 
   try {
     const categories = (await categoriesFor(query)).slice(0, MAX_CATEGORIES);
-    const place = [grant.city, grant.country].filter(Boolean).join(", ");
+    const place = [city, country].filter(Boolean).join(", ");
+    const pages = deep ? 3 : 1; // deep = până la 60 rezultate/categorie
 
-    // O cerere Google per categorie (1 pagină = max 20). Rulăm secvențial, simplu.
     const seen = new Map();
     for (const cat of categories) {
-      const results = await googleTextSearch(`${cat} in ${place}`);
+      const results = await googleTextSearch(`${cat} in ${place}`, pages);
       for (const p of results) {
-        if (p.website) continue; // păstrăm doar afacerile FĂRĂ site
+        if (p.website) continue; // doar afaceri FĂRĂ site
         const key = `${p.name}|${p.address}`;
         if (!seen.has(key)) seen.set(key, p);
       }
     }
 
     const leads = [...seen.values()];
-    res.status(200).json({ city: grant.city, country: grant.country, total: leads.length, leads });
+    res.status(200).json({ city, country, categories, total: leads.length, leads });
   } catch (err) {
     fail(res, err);
   }

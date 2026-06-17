@@ -1,7 +1,7 @@
 /* =========================================================================
- * No-Website Finder — produs €5/oraș
- * Frontend: hartă + UI. Apeluri AI + Google + Stripe trec prin /api/* (server).
- * Cheile (Claude, Google, Stripe) NU sunt niciodată în browser.
+ * No-Website Finder — unealtă personală de prospectare
+ * Frontend: hartă + mini-CRM. Google + Claude trec prin /api/* (server).
+ * Cheile nu sunt niciodată în browser. Statusul lead-urilor e salvat local.
  * ========================================================================= */
 
 const COUNTRY_CENTER = {
@@ -12,28 +12,30 @@ const COUNTRY_CENTER = {
   "Spain":          { lat: 40.000, lng:   -3.700, zoom: 6 },
 };
 
+const STATUSES = ["Nou", "Contactat", "Interesat", "Client", "Nu"];
+const STATUS_ICON = { Nou: "🆕", Contactat: "📨", Interesat: "🔥", Client: "✅", Nu: "🚫" };
+
 let map, markerLayer, currentResults = [];
 
 const $ = (id) => document.getElementById(id);
 const els = {
-  form: $("search-form"), country: $("country"), city: $("city"), query: $("query"),
+  form: $("search-form"), country: $("country"), city: $("city"), query: $("query"), deep: $("deep"),
   searchBtn: $("search-btn"), demoBtn: $("demo-btn"), scoreBtn: $("score-btn"), exportBtn: $("export-btn"),
-  status: $("status"), results: $("results"), count: $("count"),
+  status: $("status"), results: $("results"), count: $("count"), statusFilter: $("status-filter"),
   modal: $("modal"), modalTitle: $("modal-title"), modalText: $("modal-text"),
   modalClose: $("modal-close"), modalCopy: $("modal-copy"),
 };
 
-// ---- Credit (per oraș) stocat local -------------------------------------
-function creditKey(city, country) { return `nwf_credit_${country}_${city}`.toLowerCase(); }
-function getCredit(city, country) {
-  try {
-    const raw = JSON.parse(localStorage.getItem(creditKey(city, country)) || "null");
-    if (raw && raw.exp && Date.now() < raw.exp) return raw.credit;
-  } catch {}
-  return null;
+// ---- Mini-CRM: status per lead (localStorage) ---------------------------
+const leadKey = (p) => `${p.name}|${p.address}`;
+function loadStatuses() {
+  try { return JSON.parse(localStorage.getItem("nwf_status") || "{}"); } catch { return {}; }
 }
-function saveCredit(city, country, credit, exp) {
-  localStorage.setItem(creditKey(city, country), JSON.stringify({ credit, exp }));
+let statuses = loadStatuses();
+function getStatus(p) { return statuses[leadKey(p)] || "Nou"; }
+function setStatusFor(p, s) {
+  statuses[leadKey(p)] = s;
+  localStorage.setItem("nwf_status", JSON.stringify(statuses));
 }
 
 // ---- Init ----------------------------------------------------------------
@@ -50,78 +52,42 @@ function setStatus(msg, kind = "") {
   els.status.textContent = msg;
   els.status.className = "status" + (kind ? " " + kind : "");
 }
-function setLoading(on, label) {
+function setLoading(on) {
   els.searchBtn.disabled = on;
   els.demoBtn.disabled = on;
-  els.searchBtn.textContent = on ? (label || "⏳ Lucrez...") : "🔒 Caută afaceri fără site — €5";
+  els.searchBtn.textContent = on ? "⏳ Caut..." : "🔎 Caută afaceri fără site";
 }
 
 // ---- API helper ----------------------------------------------------------
-async function api(path, body, method = "POST") {
-  const opts = { method, headers: { "Content-Type": "application/json" } };
-  if (body) opts.body = JSON.stringify(body);
-  const res = await fetch(path, opts);
+async function api(path, body) {
+  const res = await fetch(path, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(body),
+  });
   const data = await res.json().catch(() => ({}));
   if (!res.ok) throw new Error(data.error || `Eroare ${res.status}`);
   return data;
 }
 
-// ---- Flux plătit ---------------------------------------------------------
-async function startSearch() {
+// ---- Search --------------------------------------------------------------
+async function runSearch() {
   const city = els.city.value.trim();
   const country = els.country.value;
   if (!city) { setStatus("Scrie un oraș.", "error"); return; }
 
-  const credit = getCredit(city, country);
-  if (credit) return runSearch(credit, city, country);
-
-  // Fără credit → Stripe Checkout.
-  setLoading(true, "⏳ Deschid plata...");
-  setStatus("Te trimit la plată (€5)...");
+  setLoading(true);
+  setStatus(`Scanez „${city}, ${country}"${els.deep.checked ? " (adânc)" : ""}...`);
   try {
-    const { url } = await api("/api/checkout", { city, country });
-    window.location.href = url;
-  } catch (err) {
-    setStatus("Eroare la plată: " + err.message, "error");
-    setLoading(false);
-  }
-}
-
-async function runSearch(credit, city, country) {
-  setLoading(true, "⏳ Caut pe Google...");
-  setStatus(`Scanez „${city}, ${country}"...`);
-  try {
-    const data = await api("/api/search", { credit, query: els.query.value.trim() });
+    const data = await api("/api/search", { city, country, query: els.query.value.trim(), deep: els.deep.checked });
     render(data.leads || []);
     setStatus(`${data.total} afaceri fără website în ${data.city}.`, "ok");
   } catch (err) {
-    if (/credit/i.test(err.message)) localStorage.removeItem(creditKey(city, country));
     setStatus("Eroare: " + err.message, "error");
   } finally {
     setLoading(false);
   }
 }
-
-// La revenirea din Stripe: ?session_id=... → schimbă pe credit și caută.
-async function handleReturn() {
-  const params = new URLSearchParams(location.search);
-  if (params.get("canceled")) { setStatus("Plată anulată.", "error"); cleanUrl(); return; }
-  const sid = params.get("session_id");
-  if (!sid) return;
-  setStatus("Confirm plata...");
-  try {
-    const { credit, city, country, exp } = await api(`/api/credit?session_id=${encodeURIComponent(sid)}`, null, "GET");
-    saveCredit(city, country, credit, exp);
-    els.city.value = city;
-    if (COUNTRY_CENTER[country]) els.country.value = country;
-    cleanUrl();
-    await runSearch(credit, city, country);
-  } catch (err) {
-    setStatus("Nu am putut confirma plata: " + err.message, "error");
-    cleanUrl();
-  }
-}
-function cleanUrl() { history.replaceState({}, "", location.pathname); }
 
 // ---- Scoring AI ----------------------------------------------------------
 async function scoreLeads() {
@@ -137,7 +103,7 @@ async function scoreLeads() {
       }
     });
     currentResults.sort((a, b) => (b.score ?? -1) - (a.score ?? -1));
-    render(currentResults, { keepScores: true });
+    render(currentResults);
     setStatus("Lead-uri clasate de la cel mai promițător.", "ok");
   } catch (err) {
     setStatus("Eroare scoring: " + err.message, "error");
@@ -164,21 +130,24 @@ function openModal(title, text) {
 function closeModal() { els.modal.classList.add("hidden"); }
 
 // ---- Rendering -----------------------------------------------------------
-function render(places, { keepScores = false } = {}) {
+function render(places) {
   currentResults = places;
   markerLayer.clearLayers();
   els.results.innerHTML = "";
-  els.count.textContent = places.length;
   els.exportBtn.disabled = !places.length;
   els.scoreBtn.disabled = !places.length;
 
-  if (!places.length) {
-    els.results.innerHTML = `<li class="result"><div class="addr">Niciun rezultat fără website.</div></li>`;
+  const filter = els.statusFilter.value;
+  const visible = places.filter((p) => filter === "all" || getStatus(p) === filter);
+  els.count.textContent = visible.length;
+
+  if (!visible.length) {
+    els.results.innerHTML = `<li class="result"><div class="addr">Nimic de afișat.</div></li>`;
     return;
   }
 
   const bounds = [];
-  places.forEach((p, i) => {
+  visible.forEach((p) => {
     if (typeof p.lat === "number" && typeof p.lng === "number") {
       const marker = L.marker([p.lat, p.lng]).addTo(markerLayer);
       marker.bindPopup(popupHtml(p));
@@ -186,6 +155,7 @@ function render(places, { keepScores = false } = {}) {
       bounds.push([p.lat, p.lng]);
     }
 
+    const st = getStatus(p);
     const li = document.createElement("li");
     li.className = "result";
     li.innerHTML = `
@@ -201,9 +171,22 @@ function render(places, { keepScores = false } = {}) {
         ${p.phone ? `<a href="tel:${esc(p.phone)}">📞 ${esc(p.phone)}</a>` : ""}
         ${p.mapsUri ? `<a href="${esc(p.mapsUri)}" target="_blank" rel="noopener">Maps ↗</a>` : ""}
         <a href="#" class="act-msg">✉ Mesaj AI</a>
+      </div>
+      <div class="status-row">
+        <select class="status-sel">
+          ${STATUSES.map((s) => `<option value="${s}" ${s === st ? "selected" : ""}>${STATUS_ICON[s]} ${s}</option>`).join("")}
+        </select>
       </div>`;
 
-    li.querySelector(".act-msg").addEventListener("click", (e) => { e.preventDefault(); e.stopPropagation(); outreach(p); });
+    li.querySelector(".act-msg").addEventListener("click", (e) => {
+      e.preventDefault(); e.stopPropagation(); outreach(p);
+    });
+    const sel = li.querySelector(".status-sel");
+    sel.addEventListener("click", (e) => e.stopPropagation());
+    sel.addEventListener("change", (e) => {
+      setStatusFor(p, e.target.value);
+      if (els.statusFilter.value !== "all") render(currentResults); // re-filtrează
+    });
     li.addEventListener("click", () => {
       if (p._marker) { map.setView([p.lat, p.lng], 16); p._marker.openPopup(); }
     });
@@ -225,34 +208,36 @@ function esc(s) {
 
 // ---- CSV -----------------------------------------------------------------
 function exportCsv() {
-  const headers = ["Name", "Address", "Phone", "Rating", "Score", "Reason", "Type", "Lat", "Lng", "GoogleMaps"];
+  const headers = ["Name", "Status", "Address", "Phone", "Rating", "Score", "Reason", "Type", "Lat", "Lng", "GoogleMaps"];
   const rows = currentResults.map((p) => [
-    p.name, p.address, p.phone, p.rating ?? "", p.score ?? "", p.reason ?? "", p.type ?? "", p.lat ?? "", p.lng ?? "", p.mapsUri ?? "",
+    p.name, getStatus(p), p.address, p.phone, p.rating ?? "", p.score ?? "", p.reason ?? "",
+    p.type ?? "", p.lat ?? "", p.lng ?? "", p.mapsUri ?? "",
   ]);
   const csv = [headers, ...rows].map((r) => r.map((v) => `"${String(v).replace(/"/g, '""')}"`).join(",")).join("\n");
   const url = URL.createObjectURL(new Blob(["﻿" + csv], { type: "text/csv;charset=utf-8;" }));
   const a = document.createElement("a");
-  a.href = url; a.download = `leads-fara-site-${Date.now()}.csv`; a.click();
+  a.href = url; a.download = `leads-${Date.now()}.csv`; a.click();
   URL.revokeObjectURL(url);
 }
 
-// ---- Demo (gratis, fără plată) ------------------------------------------
+// ---- Demo (fără API) -----------------------------------------------------
 function runDemo() {
   const country = els.country.value;
   let data = (window.DEMO_PLACES || []).filter((p) => p.country === country);
   if (!data.length) data = window.DEMO_PLACES || [];
   render(data);
-  setStatus(`Exemplu (gratis): ${data.length} afaceri în ${country}. Plătește €5 pentru date reale.`, "ok");
+  setStatus(`Exemplu: ${data.length} afaceri în ${country}. Configurează cheile pentru date reale.`, "ok");
 }
 
 // ---- Events --------------------------------------------------------------
-els.form.addEventListener("submit", (e) => { e.preventDefault(); startSearch(); });
+els.form.addEventListener("submit", (e) => { e.preventDefault(); runSearch(); });
 els.demoBtn.addEventListener("click", runDemo);
 els.scoreBtn.addEventListener("click", scoreLeads);
 els.exportBtn.addEventListener("click", exportCsv);
+els.statusFilter.addEventListener("change", () => render(currentResults));
 els.modalClose.addEventListener("click", closeModal);
 els.modal.addEventListener("click", (e) => { if (e.target === els.modal) closeModal(); });
-els.modalCopy.addEventListener("click", () => { navigator.clipboard?.writeText(els.modalText.value); });
+els.modalCopy.addEventListener("click", () => navigator.clipboard?.writeText(els.modalText.value));
 els.country.addEventListener("change", () => {
   const c = COUNTRY_CENTER[els.country.value];
   if (map) map.setView([c.lat, c.lng], c.zoom);
@@ -260,5 +245,4 @@ els.country.addEventListener("change", () => {
 
 // ---- Boot ----------------------------------------------------------------
 initMap();
-setStatus("Alege oraș + țară. €5/oraș, sau vezi un exemplu gratis.");
-handleReturn();
+setStatus("Alege oraș + țară și caută. Marchează lead-urile pe măsură ce le contactezi.");

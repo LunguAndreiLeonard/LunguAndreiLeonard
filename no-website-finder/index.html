@@ -3,8 +3,8 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>No-Website Finder · Lead-uri €5/oraș</title>
-  <meta name="description" content="Afaceri de pe Google Maps fără website, cu căutare AI. €5 pe oraș." />
+  <title>No-Website Finder · Prospectare</title>
+  <meta name="description" content="Unealta mea de prospectare: afaceri de pe Google Maps fără website + AI." />
 
   <link
     rel="stylesheet"
@@ -18,7 +18,7 @@
   <aside id="sidebar">
     <header class="brand">
       <h1>📍 No-Website Finder</h1>
-      <p class="tagline">Afaceri de pe Maps fără site — lead-uri gata de contactat. <strong>€5 / oraș.</strong></p>
+      <p class="tagline">Unealta mea de prospectare — afaceri fără site, pregătite de contactat.</p>
     </header>
 
     <form id="search-form">
@@ -41,11 +41,16 @@
       <label class="field">
         <span>Ce cauți (opțional — AI)</span>
         <input id="query" type="text" placeholder="ex: frizerii și restaurante mici" />
-        <span class="hint">Lasă gol pentru un set standard de categorii. AI-ul extinde fraza în categorii Google.</span>
+        <span class="hint">Gol = set standard de categorii. AI-ul extinde fraza în categorii Google.</span>
       </label>
 
-      <button type="submit" id="search-btn">🔒 Caută afaceri fără site — €5</button>
-      <button type="button" id="demo-btn" class="ghost">▶ Vezi un exemplu (gratis)</button>
+      <label class="checkbox">
+        <input id="deep" type="checkbox" />
+        <span>Scanare adâncă (până la 60/categorie — mai lent, costă mai mult la Google)</span>
+      </label>
+
+      <button type="submit" id="search-btn">🔎 Caută afaceri fără site</button>
+      <button type="button" id="demo-btn" class="ghost">▶ Exemplu (fără API)</button>
     </form>
 
     <div id="status" class="status"></div>
@@ -58,10 +63,24 @@
       </div>
     </div>
 
+    <div class="filters">
+      <label class="field inline">
+        <span>Arată</span>
+        <select id="status-filter">
+          <option value="all">Toate</option>
+          <option value="Nou">🆕 Noi</option>
+          <option value="Contactat">📨 Contactate</option>
+          <option value="Interesat">🔥 Interesate</option>
+          <option value="Client">✅ Clienți</option>
+          <option value="Nu">🚫 Nu</option>
+        </select>
+      </label>
+    </div>
+
     <ul id="results" class="results"></ul>
 
     <footer class="foot">
-      Hartă: OpenStreetMap · Date: Google Places (server) · AI: Claude · Plăți: Stripe
+      Hartă: OpenStreetMap · Date: Google Places (server) · AI: Claude
     </footer>
   </aside>
 

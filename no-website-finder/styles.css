@@ -180,6 +180,17 @@ button.small { padding: 6px 10px; font-size: 12px; }
 }
 .modal-actions { margin-top: 10px; display: flex; justify-content: flex-end; }
 
+.filters { display: flex; gap: 8px; }
+.field.inline { flex-direction: row; align-items: center; gap: 8px; }
+.field.inline > span { white-space: nowrap; }
+.field.inline select { padding: 6px 9px; }
+
+.status-row { margin-top: 8px; }
+.status-sel {
+  background: var(--panel); border: 1px solid var(--line); color: var(--text);
+  border-radius: 8px; padding: 5px 8px; font-size: 12px; width: 100%;
+}
+
 .foot { margin-top: auto; font-size: 11px; color: var(--muted); padding-top: 10px; border-top: 1px solid var(--line); }
 
 /* Map */
