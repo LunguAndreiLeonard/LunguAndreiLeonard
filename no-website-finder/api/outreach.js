@@ -1,7 +1,7 @@
 // POST /api/outreach
 // Body: { lead: { name, type, address, rating }, channel: "email"|"dm", lang?: "ro"|"en" }
 // Returnează: { message: "..." }
-import { client, MODEL, readJson, firstText, fail } from "./_lib.js";
+import { getClient, MODEL, readJson, firstText, fail } from "./_lib.js";
 
 export default async function handler(req, res) {
   if (req.method !== "POST") return res.status(405).json({ error: "Method not allowed" });
@@ -21,7 +21,7 @@ Rules:
 - Do not invent facts (prices, stats, awards). No placeholders like [Name] for the recipient — address the business by its name.`;
 
   try {
-    const response = await client.messages.create({
+    const response = await getClient().messages.create({
       model: MODEL,
       max_tokens: 600,
       thinking: { type: "adaptive" },

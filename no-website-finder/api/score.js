@@ -1,7 +1,7 @@
 // POST /api/score
 // Body: { leads: [{ name, address, rating, type }] }
 // Returnează: { rankings: [{ index, score, reason }] }  (index = poziția în array-ul trimis)
-import { client, MODEL, readJson, firstText, fail } from "./_lib.js";
+import { getClient, MODEL, readJson, firstText, fail } from "./_lib.js";
 
 const SYSTEM = `You score sales leads for a web-design agency. Each lead is a local business that has NO website (found via Google Maps).
 
@@ -47,7 +47,7 @@ export default async function handler(req, res) {
   }));
 
   try {
-    const response = await client.messages.create({
+    const response = await getClient().messages.create({
       model: MODEL,
       max_tokens: 4000,
       thinking: { type: "adaptive" },

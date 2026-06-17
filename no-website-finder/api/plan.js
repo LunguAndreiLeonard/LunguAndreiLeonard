@@ -1,7 +1,7 @@
 // POST /api/plan
 // Body: { query: "găsește frizerii și restaurante fără site în Toronto și Vancouver" }
 // Returnează: { searches: [{ category, city, country }] }
-import { client, MODEL, COUNTRIES, readJson, firstText, fail } from "./_lib.js";
+import { getClient, MODEL, COUNTRIES, readJson, firstText, fail } from "./_lib.js";
 
 const SYSTEM = `You turn a natural-language lead-generation request into a concrete list of Google Places text searches.
 
@@ -40,7 +40,7 @@ export default async function handler(req, res) {
   if (!query || typeof query !== "string") return res.status(400).json({ error: "Lipsește 'query'." });
 
   try {
-    const response = await client.messages.create({
+    const response = await getClient().messages.create({
       model: MODEL,
       max_tokens: 2000,
       thinking: { type: "adaptive" },

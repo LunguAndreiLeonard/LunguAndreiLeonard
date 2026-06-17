@@ -5,7 +5,7 @@
 // Google Places rulează AICI, pe server (cheia ta). Datele NU sunt stocate (ToS Google):
 // le folosești live pentru prospectarea ta.
 import {
-  client, MODEL, COUNTRIES, MAX_CATEGORIES, DEFAULT_CATEGORIES,
+  getClient, MODEL, COUNTRIES, MAX_CATEGORIES, DEFAULT_CATEGORIES,
   readJson, firstText, fail, googleTextSearch,
 } from "./_lib.js";
 
@@ -18,7 +18,7 @@ const CAT_SCHEMA = {
 
 async function categoriesFor(query) {
   if (!query) return DEFAULT_CATEGORIES;
-  const response = await client.messages.create({
+  const response = await getClient().messages.create({
     model: MODEL,
     max_tokens: 500,
     thinking: { type: "adaptive" },

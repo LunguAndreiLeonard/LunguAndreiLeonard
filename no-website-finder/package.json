@@ -4,6 +4,10 @@
   "private": true,
   "type": "module",
   "description": "Hartă lead-gen: afaceri Google Maps fără website, cu căutare AI (Claude).",
+  "scripts": {
+    "dev": "node server.js",
+    "start": "node server.js"
+  },
   "dependencies": {
     "@anthropic-ai/sdk": "latest"
   }

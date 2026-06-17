@@ -17,8 +17,13 @@ export const DEFAULT_CATEGORIES = [
   "electrician", "beauty salon", "auto repair", "bakery",
 ];
 
-// Clientul Claude citește ANTHROPIC_API_KEY din environment.
-export const client = new Anthropic();
+// Clientul Claude se inițializează „lazy" — abia când e nevoie de el — ca să nu
+// crape importul când ANTHROPIC_API_KEY nu e setat (ex: rulezi doar UI-ul).
+let _client;
+export function getClient() {
+  if (!_client) _client = new Anthropic();
+  return _client;
+}
 
 const PLACES_ENDPOINT = "https://places.googleapis.com/v1/places:searchText";
 const FIELD_MASK = [
