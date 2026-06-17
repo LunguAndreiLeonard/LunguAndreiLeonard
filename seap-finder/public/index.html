@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="ro">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="robots" content="noindex, nofollow, noarchive" />
+  <title>SEAP Finder — proiecte web dev & software</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <header>
+    <h1>🔎 SEAP Finder</h1>
+    <p>Licitații și achiziții de pe <a href="https://e-licitatie.ro/pub" target="_blank" rel="noopener">e-licitatie.ro</a> potrivite pentru web dev &amp; software, punctate după profilul tău.</p>
+  </header>
+
+  <nav class="tabs">
+    <button id="tab-tenders" class="tab active">📋 Licitații deschise</button>
+    <button id="tab-direct" class="tab">🛒 Cumpărări directe</button>
+    <button id="tab-favs" class="tab">⭐ Salvate</button>
+  </nav>
+
+  <section class="controls">
+    <input id="q" type="search" placeholder="Filtrează după cuvânt cheie, autoritate, CPV…" />
+    <label>Perioada:
+      <select id="days">
+        <option value="7">7 zile</option>
+        <option value="14">14 zile</option>
+        <option value="30" selected>30 zile</option>
+        <option value="60">60 zile</option>
+        <option value="90">90 zile</option>
+      </select>
+    </label>
+    <label>Scor minim:
+      <input id="minScore" type="number" min="0" max="100" value="15" style="width:4.5rem" />
+    </label>
+    <label id="ongoingWrap" class="hidden">
+      <input id="ongoing" type="checkbox" /> doar în desfășurare
+    </label>
+    <button id="search" class="primary">Caută</button>
+  </section>
+
+  <div id="status"></div>
+  <main id="results"></main>
+
+  <footer>
+    <p>Sursa datelor: API-ul public e-licitatie.ro · Profilul de căutare se editează în <code>config/profile.json</code></p>
+  </footer>
+
+  <script src="app.js"></script>
+</body>
+</html>
