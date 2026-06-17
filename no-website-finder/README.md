@@ -1,57 +1,95 @@
-# 📍 No-Website Finder
+# 📍 No-Website Finder — €5/oraș
 
 Aplicație web (hartă) care găsește **afaceri de pe Google Maps fără website** în
-**Canada 🇨🇦 · SUA 🇺🇸 · Marea Britanie 🇬🇧 · Germania 🇩🇪 · Spania 🇪🇸**.
+**Canada 🇨🇦 · SUA 🇺🇸 · Marea Britanie 🇬🇧 · Germania 🇩🇪 · Spania 🇪🇸**, cu **AI** și
+monetizare **€5/oraș** prin Stripe.
 
-Ideală ca instrument de lead-gen: cauți o categorie într-un oraș, aplicația
-păstrează doar afacerile care **nu au site**, le arată pe hartă + listă și le poți
-exporta în CSV pentru outreach.
+Instrument de lead-gen pentru o agenție web: utilizatorul alege un oraș, plătește
+€5, iar aplicația returnează afacerile fără site — cu **scoring AI** și **mesaje de
+outreach** generate de Claude.
 
-## Cum funcționează
+## Funcții
 
-- **Hartă:** Leaflet + OpenStreetMap (gratis, fără cheie).
-- **Date:** [Google Places API (New)](https://developers.google.com/maps/documentation/places/web-service/op-overview)
-  — endpoint `places:searchText`. Pentru fiecare rezultat se verifică câmpul
-  `websiteUri`; se păstrează doar cele unde lipsește.
-- **Mod demo:** fără cheie API, butonul rulează cu date exemplu ca să vezi fluxul.
+- **Hartă** — Leaflet + OpenStreetMap (gratis).
+- **Căutare pe server** — Google Places API (New) rulează pe **cheia ta**, pe backend;
+  filtrează afacerile fără `websiteUri`. Adâncime limitată (`MAX_CATEGORIES`) ca să
+  ții costul Google mult sub €5.
+- **AI (Claude Opus 4.8)** — din limbaj natural derivă categoriile, **clasează** lead-urile
+  (scor 0–100 + motiv) și scrie **mesaje de outreach** personalizate.
+- **Plăți** — Stripe Checkout, €5/oraș. Acces deblocat printr-un **credit semnat (HMAC)** per oraș.
 
-## Rulare locală
+## Arhitectură
 
-Fiind static, ai nevoie doar de un server HTTP (din cauza CORS / `fetch`):
+```
+Browser (static)                    Server (/api/* — serverless)
+─────────────────                   ────────────────────────────
+index.html / app.js   ──►  /api/checkout   → Stripe Checkout (€5)
+                      ◄──  redirect ?session_id
+                      ──►  /api/credit      → verifică plata, emite credit semnat
+                      ──►  /api/search      → Google Places (cheia ta) + filtrare fără-site   [necesită credit]
+                      ──►  /api/score       → Claude clasează lead-urile
+                      ──►  /api/outreach    → Claude scrie mesajul
+                           /api/webhook     → confirmare plată (plasă de siguranță)
+```
+
+**Cheile (Claude, Google, Stripe) stau DOAR pe server.** Browserul nu vede niciuna.
+
+## Rulare
+
+Necesită un runtime de funcții serverless. Cel mai simplu cu Vercel:
 
 ```bash
 cd no-website-finder
-python3 -m http.server 8000
-# deschide http://localhost:8000
+npm install
+cp .env.example .env     # completează cheile
+npx vercel dev           # rulează static + /api pe același port
 ```
 
-Sau publică folderul pe GitHub Pages / Netlify / Vercel.
+Sau publică pe Vercel/Netlify și setează variabilele de mediu din `.env.example`.
 
-## Cheie Google Places API
+### Variabile de mediu (`.env.example`)
 
-1. Intră în [Google Cloud Console](https://console.cloud.google.com/) → creează un proiect.
-2. Activează **Places API (New)**.
-3. Creează o cheie API (Credentials → API key). Recomandat: restricționează cheia
-   pe domeniul tău (HTTP referrer) și doar pe Places API.
-4. Lipește cheia în aplicație (secțiunea 🔑). Rămâne salvată **doar** în
-   `localStorage`-ul browser-ului tău, nu se trimite nicăieri altundeva.
+| Cheie | Pentru |
+|---|---|
+| `ANTHROPIC_API_KEY` | Claude (search NL, scoring, outreach) |
+| `GOOGLE_PLACES_KEY` | Google Places API (New) — activează „Places API (New)" în Google Cloud |
+| `STRIPE_SECRET_KEY` | Stripe (plăți) |
+| `STRIPE_WEBHOOK_SECRET` | Stripe webhook (`whsec_…`) — opțional pentru schelet |
+| `CREDIT_SECRET` | secret random pentru semnarea creditelor (`openssl rand -hex 32`) |
+| `PRICE_EUR_CENTS` | preț/oraș în cenți (default `500` = €5) |
 
-> ⚠️ Google Places API este **plătit** după nivelul gratuit lunar. „Search”
-> aprofundat (mai multe pagini) consumă mai multe cereri. Vezi
-> [prețurile Places API](https://developers.google.com/maps/billing-and-pricing/pricing).
+> Stripe: pentru webhook local rulează `stripe listen --forward-to localhost:3000/api/webhook`.
 
-## Note legale
+## ⚠️ TODO înainte de producție
 
-Folosește datele conform [Termenilor Google Maps Platform](https://cloud.google.com/maps-platform/terms).
-Aplicația interoghează la cerere o categorie + zonă (nu descarcă „toate locațiile”
-global — Google nu permite asta și ar fi prohibitiv ca volum/cost).
+Acesta este un **schelet funcțional**. Pentru lansare reală:
+
+1. **Anti-reutilizare credit** — acum creditul semnat e valabil 24h pentru un oraș.
+   Adaugă un store (KV/DB) care marchează `session_id`/credit drept consumat (în
+   `api/webhook.js` și `api/search.js`), ca un credit să nu fie folosit la nesfârșit.
+2. **ToS Google** — Maps Platform restricționează stocarea/revânzarea datelor Places.
+   Aplicația **generează la cerere și NU stochează** — păstrează așa și citește termenii.
+3. **Marjă** — `MAX_CATEGORIES` ține costul Google sub €5. Verifică prețurile Places
+   înainte de a mări adâncimea scanării.
+4. **Limitare/abuz** — adaugă rate-limiting pe `/api/*`.
 
 ## Structură
 
 ```
 no-website-finder/
-├── index.html      # UI + hartă
-├── styles.css      # stiluri (temă dark)
-├── app.js          # logica de căutare + filtrare website + export CSV
-└── data.demo.js    # date exemplu pentru modul demo
+├── index.html        # UI + hartă
+├── styles.css        # temă dark
+├── app.js            # frontend: flux plată → search → scoring → outreach
+├── data.demo.js      # exemplu gratis (preview)
+├── package.json      # @anthropic-ai/sdk, stripe
+├── .env.example      # cheile (server)
+└── api/
+    ├── _lib.js       # client Claude, Google Places, credite semnate (HMAC)
+    ├── plan.js       # NL → listă de căutări (multi-oraș)
+    ├── search.js     # Google Places + filtrare fără-site  [necesită credit]
+    ├── score.js      # scoring AI al lead-urilor
+    ├── outreach.js   # mesaj outreach per lead
+    ├── checkout.js   # Stripe Checkout (€5/oraș)
+    ├── credit.js     # session_id plătit → credit semnat
+    └── webhook.js    # webhook Stripe (confirmare plată)
 ```

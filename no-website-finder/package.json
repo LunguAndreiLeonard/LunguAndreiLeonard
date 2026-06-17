@@ -1,0 +1,11 @@
+{
+  "name": "no-website-finder",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Hartă lead-gen: afaceri Google Maps fără website, cu căutare AI (Claude).",
+  "dependencies": {
+    "@anthropic-ai/sdk": "latest",
+    "stripe": "latest"
+  }
+}
