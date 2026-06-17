@@ -59,7 +59,7 @@ function setStatus(msg, kind = "") {
 function setLoading(on) {
   els.searchBtn.disabled = on;
   els.demoBtn.disabled = on;
-  els.searchBtn.textContent = on ? "⏳ Caut..." : "🔎 Caută afaceri fără site";
+  els.searchBtn.textContent = on ? "Se caută…" : "Caută afaceri fără site";
 }
 
 // ---- API helper ----------------------------------------------------------

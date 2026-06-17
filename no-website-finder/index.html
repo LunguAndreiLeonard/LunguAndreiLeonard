@@ -12,13 +12,17 @@
     integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
     crossorigin=""
   />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,600;0,9..144,700;1,9..144,600;1,9..144,700&family=JetBrains+Mono:wght@400;500&family=Inter:wght@400;500;600&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
   <aside id="sidebar">
     <header class="brand">
-      <h1>📍 No-Website Finder</h1>
-      <p class="tagline">Unealta mea de prospectare — afaceri fără site, pregătite de contactat.</p>
+      <span class="eyebrow">● Unealtă de prospectare</span>
+      <h1 class="display">Afaceri <em>fără</em><br />website.</h1>
+      <p class="tagline">Le găsești pe hartă, le clasează AI-ul, le contactezi. Mai puține bătăi de cap, mai mulți clienți.</p>
     </header>
 
     <form id="search-form">
@@ -49,8 +53,8 @@
         <span>Scanare adâncă (până la 60/categorie — mai lent, costă mai mult la Google)</span>
       </label>
 
-      <button type="submit" id="search-btn">🔎 Caută afaceri fără site</button>
-      <button type="button" id="demo-btn" class="ghost">▶ Exemplu (fără API)</button>
+      <button type="submit" id="search-btn">Caută afaceri fără site</button>
+      <button type="button" id="demo-btn" class="ghost">Vezi un exemplu</button>
     </form>
 
     <div id="status" class="status"></div>
