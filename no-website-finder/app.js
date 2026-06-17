@@ -40,6 +40,10 @@ function setStatusFor(p, s) {
 
 // ---- Init ----------------------------------------------------------------
 function initMap() {
+  if (typeof L === "undefined") { // Leaflet n-a putut fi încărcat (ex: CDN blocat) — mergem fără hartă
+    console.warn("Leaflet indisponibil — aplicația rulează fără hartă.");
+    return;
+  }
   const c = COUNTRY_CENTER[els.country.value];
   map = L.map("map").setView([c.lat, c.lng], c.zoom);
   L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
@@ -132,7 +136,7 @@ function closeModal() { els.modal.classList.add("hidden"); }
 // ---- Rendering -----------------------------------------------------------
 function render(places) {
   currentResults = places;
-  markerLayer.clearLayers();
+  if (markerLayer) markerLayer.clearLayers();
   els.results.innerHTML = "";
   els.exportBtn.disabled = !places.length;
   els.scoreBtn.disabled = !places.length;
@@ -148,7 +152,7 @@ function render(places) {
 
   const bounds = [];
   visible.forEach((p) => {
-    if (typeof p.lat === "number" && typeof p.lng === "number") {
+    if (markerLayer && typeof p.lat === "number" && typeof p.lng === "number") {
       const marker = L.marker([p.lat, p.lng]).addTo(markerLayer);
       marker.bindPopup(popupHtml(p));
       p._marker = marker;
@@ -193,7 +197,7 @@ function render(places) {
     els.results.appendChild(li);
   });
 
-  if (bounds.length) map.fitBounds(bounds, { padding: [40, 40], maxZoom: 14 });
+  if (map && bounds.length) map.fitBounds(bounds, { padding: [40, 40], maxZoom: 14 });
 }
 
 function popupHtml(p) {
