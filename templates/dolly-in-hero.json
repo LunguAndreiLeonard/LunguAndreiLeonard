@@ -1,0 +1,15 @@
+{
+  "id": "dolly-in-hero",
+  "name": "Slow Dolly-In — Hero Moment",
+  "category": "cinematic",
+  "description": "Tense, slow push-in on a character or object, 70mm film look.",
+  "thumbnailPrompt": "slow dolly push-in on a lone figure in dramatic light, 70mm film, anamorphic flare",
+  "inputs": [
+    { "key": "subject", "label": "Subject", "type": "text", "required": true, "placeholder": "a weathered lighthouse keeper staring at the storm" },
+    { "key": "location", "label": "Location", "type": "text", "required": true, "placeholder": "cliff edge at dusk" }
+  ],
+  "promptTemplate": "Slow cinematic dolly-in on {subject} at {location}. Grand format 70mm film photography, classic anamorphic lens with subtle horizontal flares and oval bokeh, 40mm focal length, f/2.8, motivated single-source key light, deep shadows, gentle film grain and halation on highlights, measured push-in that builds tension, epic movie trailer atmosphere, natural motion, color graded like a prestige drama.",
+  "negativePrompt": "shaky camera, fast cuts, text, watermark, oversaturated colors, plastic skin, extra limbs",
+  "recommended": { "model": "seedance-2.0", "duration": 10, "aspectRatio": "21:9", "quality": "high", "resolution": "1080p" },
+  "referenceImages": { "min": 0, "max": 1 }
+}

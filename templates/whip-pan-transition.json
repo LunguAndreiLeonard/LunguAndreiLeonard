@@ -1,0 +1,15 @@
+{
+  "id": "whip-pan-transition",
+  "name": "Whip Pan — Scene Switch",
+  "category": "social",
+  "description": "Fast whip pan that transitions between two scenes — a classic reel transition.",
+  "thumbnailPrompt": "motion-blurred whip pan transition between two colorful scenes, vertical format",
+  "inputs": [
+    { "key": "sceneA", "label": "Scene A", "type": "text", "required": true, "placeholder": "espresso being poured in a sunlit cafe" },
+    { "key": "sceneB", "label": "Scene B", "type": "text", "required": true, "placeholder": "the finished latte art on a marble table" }
+  ],
+  "promptTemplate": "Dynamic whip pan transition shot: opens on {sceneA}, then the camera whips violently to the right with heavy directional motion blur and lands cleanly on {sceneB}. Fast snappy energy, smartphone gimbal cinematography, 24mm wide lens, punchy saturated color grade, tack-sharp start and end frames with pure motion blur mid-transition, seamless single take feel, made for short-form vertical video.",
+  "negativePrompt": "cuts, freeze frames, text, watermark, murky colors, low energy",
+  "recommended": { "model": "seedance-2.0", "duration": 5, "aspectRatio": "9:16", "quality": "basic", "resolution": "720p" },
+  "referenceImages": { "min": 0, "max": 2, "hint": "Optionally one image per scene." }
+}

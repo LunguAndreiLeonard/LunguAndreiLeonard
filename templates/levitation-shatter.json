@@ -1,0 +1,14 @@
+{
+  "id": "levitation-shatter",
+  "name": "Levitation & Shatter",
+  "category": "vfx",
+  "description": "Subject levitates, freezes, then shatters into crystalline fragments in slow motion.",
+  "thumbnailPrompt": "levitating object shattering into crystal fragments, slow motion, dramatic backlight",
+  "inputs": [
+    { "key": "subject", "label": "Subject", "type": "text", "required": true, "placeholder": "red glass perfume bottle" }
+  ],
+  "promptTemplate": "Slow-motion VFX shot: {subject} levitates gently above a dark reflective surface, rotating slowly, then freezes mid-air and shatters outward into hundreds of crystalline fragments that hang suspended in time. Extreme macro cinema lens details on the fracture lines, 1000fps high-speed camera aesthetic, hard backlight refracting through every shard, f/4 for depth across the debris field, fragments drifting with zero gravity elegance, deep black background with a single cold rim light, premium ad-film surrealism.",
+  "negativePrompt": "gore, people, text, watermark, cartoon explosion, dust clouds obscuring the subject, low detail",
+  "recommended": { "model": "seedance-2.0", "duration": 8, "aspectRatio": "16:9", "quality": "high", "resolution": "1080p" },
+  "referenceImages": { "min": 0, "max": 1 }
+}

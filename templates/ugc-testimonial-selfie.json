@@ -1,0 +1,37 @@
+{
+  "id": "ugc-testimonial-selfie",
+  "name": "UGC Selfie Testimonial",
+  "category": "talking-head",
+  "description": "Handheld selfie-style clip of a person talking to camera, authentic creator energy.",
+  "thumbnailPrompt": "selfie-angle video of a smiling person talking to camera outdoors, natural light, vertical",
+  "inputs": [
+    {
+      "key": "subject",
+      "label": "Creator description",
+      "type": "text",
+      "required": true,
+      "placeholder": "young man with curly hair in a denim jacket"
+    },
+    {
+      "key": "setting",
+      "label": "Setting",
+      "type": "text",
+      "required": false,
+      "placeholder": "walking down a sunny street",
+      "default": "at home with soft window light"
+    }
+  ],
+  "promptTemplate": "Authentic UGC selfie video: {subject} holding the camera at arm's length, {setting}, talking directly into the lens with genuine enthusiasm, natural smiles and casual head tilts. Front-facing smartphone camera look, 24mm equivalent wide lens with slight distortion at the edges, soft natural daylight, believable handheld sway synced to walking, spontaneous creator energy, realistic skin and hair detail, vertical framing with the face in the upper half.",
+  "negativePrompt": "studio lighting, tripod stability, warped face, extra fingers on the phone hand, text, watermark",
+  "recommended": {
+    "model": "seedance-2.0",
+    "duration": 10,
+    "aspectRatio": "9:16",
+    "quality": "basic",
+    "resolution": "720p"
+  },
+  "referenceImages": {
+    "min": 0,
+    "max": 1
+  }
+}

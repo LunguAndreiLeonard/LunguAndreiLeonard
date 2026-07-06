@@ -1,0 +1,37 @@
+{
+  "id": "anamorphic-night-drive",
+  "name": "Anamorphic Night Drive",
+  "category": "cinematic",
+  "description": "Moody tracking shot alongside a car through neon-lit streets at night.",
+  "thumbnailPrompt": "low tracking shot of a car driving through neon-lit rainy streets at night, anamorphic bokeh",
+  "inputs": [
+    {
+      "key": "subject",
+      "label": "Vehicle / subject",
+      "type": "text",
+      "required": true,
+      "placeholder": "black vintage Porsche 911"
+    },
+    {
+      "key": "city",
+      "label": "City mood",
+      "type": "text",
+      "required": false,
+      "placeholder": "rain-soaked Tokyo side streets",
+      "default": "rain-soaked city streets"
+    }
+  ],
+  "promptTemplate": "Low-angle vehicle tracking shot: camera car glides alongside {subject} driving through {city} at night. Compact anamorphic lenses with pronounced oval bokeh and blue horizontal lens flares, 35mm focal length wide perspective, f/1.4 razor-thin depth of field, wet asphalt mirroring neon signage, rhythmic passing streetlights raking across the bodywork, subtle motion blur, moody synthwave color palette, cinematic car commercial energy.",
+  "negativePrompt": "daylight, crowds, text, watermark, warped wheels, morphing car body, cartoon",
+  "recommended": {
+    "model": "seedance-2.0",
+    "duration": 8,
+    "aspectRatio": "21:9",
+    "quality": "high",
+    "resolution": "1080p"
+  },
+  "referenceImages": {
+    "min": 0,
+    "max": 1
+  }
+}

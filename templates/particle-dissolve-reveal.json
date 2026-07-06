@@ -1,0 +1,42 @@
+{
+  "id": "particle-dissolve-reveal",
+  "name": "Particle Dissolve — Reveal",
+  "category": "vfx",
+  "description": "Subject materializes from a swirling cloud of glowing particles.",
+  "thumbnailPrompt": "object assembling itself from glowing golden particles against black, cinematic vfx",
+  "inputs": [
+    {
+      "key": "subject",
+      "label": "Subject to materialize",
+      "type": "text",
+      "required": true,
+      "placeholder": "chrome smartwatch"
+    },
+    {
+      "key": "particleStyle",
+      "label": "Particle style",
+      "type": "select",
+      "required": false,
+      "options": [
+        "golden embers",
+        "cool blue data shards",
+        "silver stardust"
+      ],
+      "default": "silver stardust"
+    }
+  ],
+  "promptTemplate": "VFX reveal shot: a swirling vortex of {particleStyle} spirals inward against a pure black void and assembles into {subject}, which lands with a soft light pulse. Slow 30-degree camera drift during the formation, premium large format digital cinema camera, 65mm lens, f/2.8, volumetric god rays through the particle cloud, physically believable particle motion with drag and turbulence, final frame tack sharp on the fully formed subject, high-end title-sequence energy.",
+  "negativePrompt": "cartoon sparkles, text, watermark, flat lighting, low particle count, jittery motion",
+  "recommended": {
+    "model": "seedance-2.0",
+    "duration": 8,
+    "aspectRatio": "16:9",
+    "quality": "high",
+    "resolution": "1080p"
+  },
+  "referenceImages": {
+    "min": 0,
+    "max": 1,
+    "hint": "A product shot on black gives the cleanest materialization."
+  }
+}
