@@ -94,6 +94,18 @@ export default function GenerateForm({ templates, initialTemplateId, rerunJobId,
   const [error, setError] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const hydratedFromJob = useRef(false);
+  const syncedProvider = useRef(false);
+  const skipTemplateApply = useRef(false);
+
+  // Settings load from localStorage after hydration, so the useState initial
+  // value always sees the SSR fallback ('mock'). Sync the real active
+  // provider once on mount; later inline changes belong to the user.
+  useEffect(() => {
+    if (mounted && !syncedProvider.current) {
+      syncedProvider.current = true;
+      if (!rerunJobId && !continueJobId) setProviderId(settings.activeProvider);
+    }
+  }, [mounted, settings.activeProvider, rerunJobId, continueJobId]);
 
   const apiKey = settings.apiKeys[provider.id] ?? '';
   const needsKey = !provider.keyless && !apiKey;
@@ -106,6 +118,9 @@ export default function GenerateForm({ templates, initialTemplateId, rerunJobId,
   const effectivePrompt = promptOverride ?? compiled.prompt;
 
   // ── keep option state within the selected model's capabilities ─────────
+  // Values are dependencies too: template recommendations can set an option
+  // the current model doesn't support (e.g. 8s on a 5/10/15 model) without
+  // the model object changing — re-clamp whenever anything moves.
   useEffect(() => {
     if (!model) return;
     setModelId(model.id);
@@ -114,7 +129,7 @@ export default function GenerateForm({ templates, initialTemplateId, rerunJobId,
     setResolution((v) => (model.resolutions.length ? pickSupported(v, model.resolutions) : undefined));
     setQuality((v) => (model.qualities.length ? pickSupported(v, model.qualities) : undefined));
     setRefImages((imgs) => imgs.slice(0, model.maxRefImages));
-  }, [model]);
+  }, [model, aspectRatio, duration, resolution, quality]);
 
   // Model list depends on mode — make sure the selection stays valid.
   useEffect(() => {
@@ -126,6 +141,12 @@ export default function GenerateForm({ templates, initialTemplateId, rerunJobId,
   // ── apply template recommendations once when a template is chosen ──────
   useEffect(() => {
     if (!template) return;
+    if (skipTemplateApply.current) {
+      // Re-run hydration set the template together with the job's own
+      // settings — applying recommendations now would clobber them.
+      skipTemplateApply.current = false;
+      return;
+    }
     const rec = template.recommended;
     if (rec.model && caps.models.some((m) => m.id === rec.model)) setModelId(rec.model);
     if (rec.aspectRatio) setAspectRatio(rec.aspectRatio);
@@ -149,6 +170,7 @@ export default function GenerateForm({ templates, initialTemplateId, rerunJobId,
       setModelId(job.model);
       if (rerunJobId) {
         setMode(job.mode);
+        if (job.templateId) skipTemplateApply.current = true;
         setTemplateId(job.templateId);
         setInputValues(job.params.templateInputs ?? {});
         setFreePrompt(job.compiledPrompt);

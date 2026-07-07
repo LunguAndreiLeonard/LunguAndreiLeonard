@@ -108,8 +108,9 @@ function buildPayload(params: GenerationParams, model: FalModel): Record<string,
   if (params.mode === 'i2v') {
     const images = params.imageUrls ?? [];
     if (images.length === 0) throw new Error('i2v needs at least one reference image.');
-    if (model.maxRefImages > 1 && images.length > 1) {
-      // Multi-reference goes through reference-to-video semantics.
+    if (images.length > 1) {
+      // Multiple references are a reference-to-video call (see submitJob,
+      // which swaps the endpoint accordingly) and use image_urls.
       payload.image_urls = images;
     } else {
       payload.image_url = images[0];
@@ -153,7 +154,13 @@ export const falProvider: VideoProvider = {
 
   async submitJob(params: GenerationParams, apiKey: string): Promise<SubmittedJob> {
     const model = findModel(params.model);
-    const endpoint = model.endpoints[params.mode];
+    let endpoint = model.endpoints[params.mode];
+    // The plain image-to-video endpoint takes exactly one image_url; several
+    // reference images are only supported by reference-to-video.
+    if (params.mode === 'i2v' && (params.imageUrls?.length ?? 0) > 1) {
+      endpoint = model.endpoints.continuation;
+      if (!endpoint) throw new Error(`fal.ai: ${model.name} supports only one reference image.`);
+    }
     if (!endpoint) throw new Error(`fal.ai: ${model.name} does not support ${params.mode}.`);
 
     const response = await fetch(`${QUEUE_BASE}/${endpoint}`, {
