@@ -1,0 +1,42 @@
+{
+  "id": "talking-head-podcast",
+  "name": "Podcast Frame — Talking Head",
+  "category": "talking-head",
+  "description": "Static podcast-style medium shot of a speaker with warm studio depth behind them.",
+  "thumbnailPrompt": "medium shot of a speaker at a podcast microphone, warm studio background, shallow depth",
+  "inputs": [
+    {
+      "key": "subject",
+      "label": "Speaker description",
+      "type": "text",
+      "required": true,
+      "placeholder": "confident woman in her 30s wearing a dark blazer"
+    },
+    {
+      "key": "topicEnergy",
+      "label": "Delivery energy",
+      "type": "select",
+      "required": false,
+      "options": [
+        "calm and thoughtful",
+        "animated and enthusiastic",
+        "serious and direct"
+      ],
+      "default": "calm and thoughtful"
+    }
+  ],
+  "promptTemplate": "Locked-off medium shot, podcast studio: {subject} speaking naturally to an off-camera host, {topicEnergy} delivery with believable micro-expressions, natural head movement and hand gestures. Studio digital S35 camera, 85mm portrait prime at f/2.0, creamy background bokeh with warm practical lamps and acoustic panels, broadcast-quality three-point lighting, gentle rim light separating the speaker, realistic skin texture, professional interview framing with headroom on the rule of thirds.",
+  "negativePrompt": "camera movement, warped face, dead eyes, extra teeth, plastic skin, text, watermark, audience",
+  "recommended": {
+    "model": "seedance-2.0",
+    "duration": 10,
+    "aspectRatio": "16:9",
+    "quality": "high",
+    "resolution": "1080p"
+  },
+  "referenceImages": {
+    "min": 0,
+    "max": 1,
+    "hint": "A portrait of the speaker keeps identity consistent."
+  }
+}

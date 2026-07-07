@@ -1,0 +1,38 @@
+{
+  "id": "product-orbit-360",
+  "name": "360° Orbit — Product Turntable",
+  "category": "product",
+  "description": "Slow cinematic orbit around a product with dramatic reflections, like a launch film.",
+  "thumbnailPrompt": "camera orbiting a premium product on a glossy black turntable, neon reflections",
+  "inputs": [
+    {
+      "key": "subject",
+      "label": "Subject",
+      "type": "text",
+      "required": true,
+      "placeholder": "matte white wireless earbuds case"
+    },
+    {
+      "key": "accent",
+      "label": "Accent color / mood",
+      "type": "text",
+      "required": false,
+      "placeholder": "electric blue",
+      "default": "cool white"
+    }
+  ],
+  "promptTemplate": "Smooth 360-degree orbital camera move around {subject} resting on a glossy black reflective turntable. Slow, perfectly stabilized gimbal orbit, modular 8K digital cinema camera, 50mm prime lens at f/4 for clean edge-to-edge sharpness, {accent} accent lighting sweeping across the product surface as the camera circles, mirror-like reflections below, thin volumetric haze, luxurious tech launch film aesthetic.",
+  "negativePrompt": "hands, people, jitter, warped product geometry, text, watermark, cartoon",
+  "recommended": {
+    "model": "seedance-2.0",
+    "duration": 10,
+    "aspectRatio": "16:9",
+    "quality": "high",
+    "resolution": "1080p"
+  },
+  "referenceImages": {
+    "min": 0,
+    "max": 1,
+    "hint": "A straight-on product shot; the model will invent the rest of the orbit."
+  }
+}

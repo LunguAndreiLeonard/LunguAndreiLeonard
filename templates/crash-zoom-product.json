@@ -1,0 +1,38 @@
+{
+  "id": "crash-zoom-product",
+  "name": "Crash Zoom — Product Reveal",
+  "category": "product",
+  "description": "Aggressive crash zoom from wide to macro detail on a hero product, studio lighting.",
+  "thumbnailPrompt": "dramatic crash zoom onto a premium product on a dark pedestal, studio rim lighting, shallow depth of field",
+  "inputs": [
+    {
+      "key": "subject",
+      "label": "Subject",
+      "type": "text",
+      "required": true,
+      "placeholder": "black ceramic dental aligner case"
+    },
+    {
+      "key": "surface",
+      "label": "Surface / setting",
+      "type": "text",
+      "required": false,
+      "placeholder": "brushed concrete pedestal",
+      "default": "a matte dark pedestal"
+    }
+  ],
+  "promptTemplate": "Crash zoom shot: camera starts on a wide locked-off frame of {subject} placed on {surface}, then executes an aggressive, fast crash zoom punching in to an extreme macro close-up of the product surface. Premium studio product cinematography, full frame cine digital camera, 100mm macro lens, f/2.8 shallow depth of field, hard key light with soft rim light, deep black background, subtle floating dust particles catching the light, ultra sharp focus on the product, high-end commercial look.",
+  "negativePrompt": "hands, people, text, watermark, logo distortion, warped geometry, blur on product, low quality",
+  "recommended": {
+    "model": "seedance-2.0",
+    "duration": 5,
+    "aspectRatio": "9:16",
+    "quality": "high",
+    "resolution": "1080p"
+  },
+  "referenceImages": {
+    "min": 0,
+    "max": 1,
+    "hint": "One clean photo of the product on a neutral background works best."
+  }
+}

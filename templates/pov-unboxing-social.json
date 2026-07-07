@@ -1,0 +1,42 @@
+{
+  "id": "pov-unboxing-social",
+  "name": "POV Unboxing — Social Hook",
+  "category": "social",
+  "description": "First-person hands opening a package, snappy and bright, built for vertical feeds.",
+  "thumbnailPrompt": "POV hands opening a premium box on a bright desk, vertical video, soft daylight",
+  "inputs": [
+    {
+      "key": "subject",
+      "label": "Product inside the box",
+      "type": "text",
+      "required": true,
+      "placeholder": "pastel pink mechanical keyboard"
+    },
+    {
+      "key": "vibe",
+      "label": "Vibe",
+      "type": "select",
+      "required": false,
+      "options": [
+        "cozy morning",
+        "clean minimal",
+        "vibrant studio"
+      ],
+      "default": "clean minimal"
+    }
+  ],
+  "promptTemplate": "First-person POV shot: hands enter frame and open a premium matte box revealing {subject}, {vibe} setting. Handheld smartphone-style framing with subtle natural shake, bright soft window light, quick satisfying reveal moment as the lid lifts, product fills the lower third of the frame, crisp focus, airy depth of field, high-energy social media unboxing aesthetic, true-to-life colors.",
+  "negativePrompt": "faces, text overlays, watermark, extra fingers, deformed hands, dark moody lighting",
+  "recommended": {
+    "model": "seedance-2.0",
+    "duration": 5,
+    "aspectRatio": "9:16",
+    "quality": "basic",
+    "resolution": "720p"
+  },
+  "referenceImages": {
+    "min": 0,
+    "max": 1,
+    "hint": "Optional: a photo of the product to keep it on-model."
+  }
+}
